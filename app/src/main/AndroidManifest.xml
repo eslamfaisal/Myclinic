@@ -19,10 +19,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <provider
             android:name=".data.DentalProvider"
             android:authorities="com.eslamfaisal.myclinic"
             android:exported="false" />
+
+        <activity android:name=".CatalogActivity" />
+        <activity android:name=".EditorActivity"></activity>
     </application>
 
 </manifest>
