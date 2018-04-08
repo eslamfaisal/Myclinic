@@ -10,4 +10,7 @@
     <string name="save_data">Save Data</string>
     <string name="editor_insert_pet_failed">Insert patient failed</string>
     <string name="editor_insert_pet_successful">Insert patient successful</string>
+    <string name="delete_dialog_msg">Delete Patient</string>
+    <string name="delete">Delete</string>
+    <string name="cancel1">Cancel</string>
 </resources>

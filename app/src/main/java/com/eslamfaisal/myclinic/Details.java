@@ -3,8 +3,10 @@ package com.eslamfaisal.myclinic;
 import com.eslamfaisal.myclinic.data.DentalContract;
 import com.eslamfaisal.myclinic.data.DentalContract.PatientsEntry;
 
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
@@ -14,6 +16,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class Details extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     Uri currentUri;
@@ -65,7 +68,10 @@ public class Details extends AppCompatActivity implements LoaderManager.LoaderCa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-
+        // Bail early if the cursor is null or there is less than 1 row in the cursor
+        if (cursor == null || cursor.getCount() < 1) {
+            return;
+        }
         cursor.moveToNext();
         int nameColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_NAME);
         int phoneColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_PHONE);
@@ -88,25 +94,24 @@ public class Details extends AppCompatActivity implements LoaderManager.LoaderCa
         Integer paid1 = cursor.getInt(paidColumnIndex);
         Integer remain1 = cursor.getInt(remainingColumnIndex);
         String date1 = cursor.getString(dateColumnIndex);
-
         name.setText(name1);
         phone.setText("0" + phone1);
         notes.setText(notes1);
         description.setText(description1);
-        age.setText("" + age1);
-        amount.setText("" + amount1);
-        paid.setText("" + paid1);
-        remaining.setText("" + remain1);
+        age.setText(String.valueOf( age1));
+        amount.setText(String.valueOf( amount1));
+        paid.setText(String.valueOf( paid1));
+        remaining.setText(String.valueOf(remain1));
         date.setText(date1);
         switch (gender1) {
             case 1:
-                gender.setText("Male");
+                gender.setText(getString(R.string.gender_male));
                 break;
             case 2:
-                gender.setText("Female");
+                gender.setText(getString(R.string.gender_female));
                 break;
             default:
-                gender.setText("Unknown");
+                gender.setText(getString(R.string.gender_unknown));
         }
     }
 
@@ -124,16 +129,49 @@ public class Details extends AppCompatActivity implements LoaderManager.LoaderCa
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+       switch (id){
+           case R.id.edit_data :
+              Intent intent = new Intent(this,EditorActivity.class);
+              intent.setData(currentUri);
+              startActivity(intent);
+               break;
+           case R.id.delete_patient :
+               showDeleteConfirmationDialog();
 
+               break;
+       }
         return super.onOptionsItemSelected(item);
     }
+
+
+    /**
+     * Prompt the user to confirm that they want to delete this pet.
+     */
+    private void showDeleteConfirmationDialog() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.delete_dialog_msg);
+        builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Delete" button, so delete the pet.
+                getContentResolver().delete(currentUri,null,null);
+                finish();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel1, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
 }

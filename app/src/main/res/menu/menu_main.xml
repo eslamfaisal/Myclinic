@@ -4,13 +4,6 @@
     tools:context="com.eslamfaisal.myclinic.MainActivity">
 
     <item
-        android:id="@+id/dummy_data"
-        android:orderInCategory="100"
-        android:title="@string/add_dummy_data"
-        app:showAsAction="always"
-        android:icon="@drawable/ic_add_black_24dp"/>
-
-    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"

@@ -25,8 +25,21 @@
             android:authorities="com.eslamfaisal.myclinic"
             android:exported="false" />
 
-        <activity android:name=".EditorActivity" />
-        <activity android:name=".Details"></activity>
+        <activity
+            android:name=".EditorActivity"
+            android:parentActivityName=".Details">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".Details" />
+        </activity>
+        <activity
+            android:name=".Details"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
     </application>
 
 </manifest>

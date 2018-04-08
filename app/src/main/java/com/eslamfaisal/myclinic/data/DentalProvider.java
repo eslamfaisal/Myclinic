@@ -75,26 +75,22 @@ public class DentalProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
+        checkValues(values);
         final int match = matcher.match(uri);
         switch (match) {
             case PATIENTS:
                 SQLiteDatabase database = dbHelper.getWritableDatabase();
-
                 long id = database.insert(PatientsEntry.TABLE_NAME, null, values);
                 if (id == -1) {
                     Log.e("ssssssssssssss", "Failed to insert row for " + uri);
                     return null;
                 }
-
-                // Notify all listeners that the data has changed for the pet content URI
                 getContext().getContentResolver().notifyChange(uri, null);
                 return ContentUris.withAppendedId(uri, id);
             default:
                 throw new IllegalArgumentException("Insertion is not supported for " + uri);
         }
     }
-
-
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
@@ -112,7 +108,10 @@ public class DentalProvider extends ContentProvider {
                 break;
             default:
                 throw new IllegalArgumentException("Deletion is not supported for " + uri);
+        }
 
+        if (numberDeleted != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
         }
         return numberDeleted;
     }
@@ -125,9 +124,6 @@ public class DentalProvider extends ContentProvider {
             case PATIENTS:
                 return updatePatient(uri, values, selection, selectionArgs);
             case PATIENT_ID:
-                // For the PET_ID code, extract out the ID from the URI,
-                // so we know which row to update. Selection will be "_id=?" and selection
-                // arguments will be a String array containing the actual ID.
                 selection = PatientsEntry._ID + "=?";
                 selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
                 return updatePatient(uri, values, selection, selectionArgs);
@@ -138,24 +134,72 @@ public class DentalProvider extends ContentProvider {
 
     private int updatePatient(Uri uri, ContentValues values, String selection, String[] selectionArgs){
 
-        // No need to check the breed, any value is valid (including null).
-
-        // If there are no values to update, then don't try to update the database
         if (values.size() == 0) {
             return 0;
         }
         SQLiteDatabase database = dbHelper.getWritableDatabase();
 
-        // Perform the update on the database and get the number of rows affected
+
         int rowsUpdated = database.update(PatientsEntry.TABLE_NAME, values, selection, selectionArgs);
 
-        // If 1 or more rows were updated, then notify all listeners that the data at the
-        // given URI has changed
         if (rowsUpdated != 0) {
             getContext().getContentResolver().notifyChange(uri, null);
         }
 
-        // Return the number of rows updated
         return rowsUpdated;
+    }
+
+    private void checkValues(ContentValues values) {
+
+        String name = values.getAsString(PatientsEntry.COLUMN_PATIENT_NAME);
+        if (name == null) {
+            throw new IllegalArgumentException("Pet requires a name");
+        }
+
+        Integer age = values.getAsInteger(PatientsEntry.COLUMN_PATIENT_AGE);
+        if (age == null ) {
+            throw new IllegalArgumentException("Pet requires valid weight");
+        }
+
+        Integer gender = values.getAsInteger(PatientsEntry.COLUMN_PATIENT_GENDER);
+        if (gender == null ) {
+            throw new IllegalArgumentException("Pet requires valid weight");
+        }
+
+        Integer phone = values.getAsInteger(PatientsEntry.COLUMN_PATIENT_PHONE);
+        if (phone == null ) {
+            throw new IllegalArgumentException("Pet requires valid weight");
+        }
+
+        String date = values.getAsString(PatientsEntry.COLUMN_PATIENT_DATE);
+        if (date == null) {
+            throw new IllegalArgumentException("Pet requires a name");
+        }
+
+        Integer amount = values.getAsInteger(PatientsEntry.COLUMN_PATIENT_AMOUNT);
+        if (amount == null ) {
+            throw new IllegalArgumentException("Pet requires valid gender");
+        }
+
+        Integer remain = values.getAsInteger(PatientsEntry.COLUMN_PATIENT_REMAINING);
+        if (remain == null ) {
+            throw new IllegalArgumentException("Pet requires valid weight");
+        }
+
+        Integer paid = values.getAsInteger(PatientsEntry.COLUMN_PATIENT_PAID);
+        if (paid == null ) {
+            throw new IllegalArgumentException("Pet requires valid weight");
+        }
+
+        String notes = values.getAsString(PatientsEntry.COLUMN_PATIENT_NOTES);
+        if (notes == null) {
+            throw new IllegalArgumentException("Pet requires a name");
+        }
+
+        String desc = values.getAsString(PatientsEntry.COLUMN_PATIENT_DESCRIPTION);
+        if (desc == null) {
+            throw new IllegalArgumentException("Pet requires a name");
+        }
+
     }
 }
