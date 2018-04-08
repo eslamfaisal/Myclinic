@@ -28,6 +28,7 @@ public class DentalDbHelper extends SQLiteOpenHelper {
                 + PatientsEntry.COLUMN_PATIENT_GENDER + " INTEGER NOT NULL ,"
                 + PatientsEntry.COLUMN_PATIENT_PAID + " INTEGER NOT NULL ,"
                 + PatientsEntry.COLUMN_PATIENT_REMAINING + " INTEGER NOT NULL ,"
+                + PatientsEntry.COLUMN_PATIENT_PHONE + " INTEGER NOT NULL ,"
                 + PatientsEntry.COLUMN_PATIENT_NOTES + " TEXT NOT NULL ,"
                 + PatientsEntry.COLUMN_PATIENT_DESCRIPTION + " TEXT NOT NULL );";
         db.execSQL(SQL_CREATE_PATIENTS_TABLE);

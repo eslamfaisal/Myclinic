@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">My clinic</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">Delete All</string>
     <string name="textview">TextView</string>
     <string name="add_dummy_data">Add Dummy Data</string>
+    <string name="gender_unknown">Unknown</string>
+    <string name="gender_male">Male</string>
+    <string name="gender_female">Female</string>
+    <string name="Delete">delete</string>
+    <string name="save_data">Save Data</string>
+    <string name="editor_insert_pet_failed">Insert patient failed</string>
+    <string name="editor_insert_pet_successful">Insert patient successful</string>
 </resources>

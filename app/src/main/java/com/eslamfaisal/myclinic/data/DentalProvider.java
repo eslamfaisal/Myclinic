@@ -62,6 +62,7 @@ public class DentalProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Cannot query unknown URI " + uri);
         }
+        cursor.setNotificationUri(getContext().getContentResolver(),uri);
         return cursor;
     }
 
@@ -85,12 +86,15 @@ public class DentalProvider extends ContentProvider {
                     return null;
                 }
 
-
+                // Notify all listeners that the data has changed for the pet content URI
+                getContext().getContentResolver().notifyChange(uri, null);
                 return ContentUris.withAppendedId(uri, id);
             default:
                 throw new IllegalArgumentException("Insertion is not supported for " + uri);
         }
     }
+
+
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
@@ -115,11 +119,43 @@ public class DentalProvider extends ContentProvider {
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
+
+        final int match = matcher.match(uri);
+        switch (match) {
+            case PATIENTS:
+                return updatePatient(uri, values, selection, selectionArgs);
+            case PATIENT_ID:
+                // For the PET_ID code, extract out the ID from the URI,
+                // so we know which row to update. Selection will be "_id=?" and selection
+                // arguments will be a String array containing the actual ID.
+                selection = PatientsEntry._ID + "=?";
+                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                return updatePatient(uri, values, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Update is not supported for " + uri);
+        }
+    }
+
+    private int updatePatient(Uri uri, ContentValues values, String selection, String[] selectionArgs){
+
+        // No need to check the breed, any value is valid (including null).
+
+        // If there are no values to update, then don't try to update the database
+        if (values.size() == 0) {
+            return 0;
+        }
         SQLiteDatabase database = dbHelper.getWritableDatabase();
-        int numberUpdated;
 
-                numberUpdated = database.update(PatientsEntry.TABLE_NAME, values, selection, selectionArgs);
+        // Perform the update on the database and get the number of rows affected
+        int rowsUpdated = database.update(PatientsEntry.TABLE_NAME, values, selection, selectionArgs);
 
-        return numberUpdated;
+        // If 1 or more rows were updated, then notify all listeners that the data at the
+        // given URI has changed
+        if (rowsUpdated != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        // Return the number of rows updated
+        return rowsUpdated;
     }
 }
