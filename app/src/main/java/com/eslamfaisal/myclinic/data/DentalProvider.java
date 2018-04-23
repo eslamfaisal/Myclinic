@@ -156,6 +156,11 @@ public class DentalProvider extends ContentProvider {
             throw new IllegalArgumentException("Pet requires a name");
         }
 
+        String image = values.getAsString(PatientsEntry.COLUMN_PATIENT_IMAGE);
+        if (image == null) {
+            throw new IllegalArgumentException("Pet requires a image");
+        }
+
         Integer age = values.getAsInteger(PatientsEntry.COLUMN_PATIENT_AGE);
         if (age == null ) {
             throw new IllegalArgumentException("Pet requires valid weight");

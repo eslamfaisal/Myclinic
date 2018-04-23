@@ -1,22 +1,34 @@
 package com.eslamfaisal.myclinic;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
+import android.os.PersistableBundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageSwitcher;
+import android.widget.ImageView;
 import android.widget.Spinner;
 
 import com.eslamfaisal.myclinic.data.DentalContract.PatientsEntry;
@@ -35,20 +47,32 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     EditText name, age, phone, paid, amount, remaining, notes, description;
     Uri currentUri;
     Spinner spinner;
-    Cursor cursor;
-
     String date;
+
+    private boolean mPetHasChanged = false;
+    private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            mPetHasChanged = true;
+            return false;
+        }
+    };
+    ImageView productImage;
+    Uri imageUri;
+    String image;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
-
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         Intent intent = getIntent();
         currentUri = intent.getData();
 
         datePicker = findViewById(R.id.picker);
 
+        productImage = findViewById(R.id.imageView);
+        TextView uploadButton = (TextView) findViewById(R.id.upload);
         age = findViewById(R.id.edit_age);
         name = findViewById(R.id.edit_name);
         paid = findViewById(R.id.edit_paid);
@@ -63,6 +87,15 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         if (currentUri != null) {
             getLoaderManager().initLoader(0, null, this);
         }
+
+
+        uploadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                trySelector();
+                Toast.makeText(EditorActivity.this, "ammaaaaaaaaaaaaak", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     public void insertPatient() {
@@ -92,6 +125,16 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(PatientsEntry.COLUMN_PATIENT_AMOUNT, mAmount);
         values.put(PatientsEntry.COLUMN_PATIENT_GENDER, mGender);
         values.put(PatientsEntry.COLUMN_PATIENT_REMAINING, mRemaining);
+        image = null;
+        if (imageUri == null) {
+
+            values.put(PatientsEntry.COLUMN_PATIENT_IMAGE, image);
+        } else {
+            image = imageUri.toString();
+            values.put(PatientsEntry.COLUMN_PATIENT_IMAGE, image);
+        }
+
+
         if (currentUri == null) {
             values.put(PatientsEntry.COLUMN_PATIENT_DATE, setupPiker());
         } else {
@@ -99,19 +142,25 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         }
         values.put(PatientsEntry.COLUMN_PATIENT_DESCRIPTION, mDescription);
 
-        if (currentUri == null) {
-            Uri newUri = getContentResolver().insert(PatientsEntry.CONTENT_URI, values);
-            if (newUri == null) {
-                // If the new content URI is null, then there was an error with insertion.
-                Toast.makeText(this, getString(R.string.editor_insert_pet_failed),
-                        Toast.LENGTH_SHORT).show();
+        if (image == null) {
+            Toast.makeText(this, "حط صورة ياسطا", Toast.LENGTH_LONG).show();
+        } else {
+
+            if (currentUri == null) {
+
+                Uri newUri = getContentResolver().insert(PatientsEntry.CONTENT_URI, values);
+                if (newUri == null) {
+                    // If the new content URI is null, then there was an error with insertion.
+                    Toast.makeText(this, getString(R.string.editor_insert_pet_failed),
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    // Otherwise, the insertion was successful and we can display a toast.
+                    Toast.makeText(this, getString(R.string.editor_insert_pet_successful),
+                            Toast.LENGTH_SHORT).show();
+                }
             } else {
-                // Otherwise, the insertion was successful and we can display a toast.
-                Toast.makeText(this, getString(R.string.editor_insert_pet_successful),
-                        Toast.LENGTH_SHORT).show();
+                getContentResolver().update(currentUri, values, null, null);
             }
-        }else {
-            getContentResolver().update(currentUri,values,null,null);
         }
     }
 
@@ -128,6 +177,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         getMenuInflater().inflate(R.menu.editor_menu, menu);
         return true;
     }
+
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
@@ -146,7 +196,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         switch (id) {
             case R.id.save_data:
                 insertPatient();
-                finish();
+                if (image != null) {
+                    finish();
+                }
                 return true;
             case R.id.delete:
                 finish();
@@ -218,53 +270,128 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 
-        cursor.moveToNext();
-        int nameColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_NAME);
-        int phoneColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_PHONE);
-        int ageColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_AGE);
-        int genderColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_GENDER);
-        int amountColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_AMOUNT);
-        int paidColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_PAID);
-        int remainingColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_REMAINING);
-        int dateColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_DATE);
-        int notesColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_NOTES);
-        int descriptionColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_DESCRIPTION);
+        if (cursor.moveToNext()) {
+            int nameColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_NAME);
+            int phoneColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_PHONE);
+            int ageColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_AGE);
+            int genderColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_GENDER);
+            int amountColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_AMOUNT);
+            int paidColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_PAID);
+            int remainingColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_REMAINING);
+            int dateColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_DATE);
+            int notesColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_NOTES);
+            int descriptionColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_DESCRIPTION);
 
-        String name1 = cursor.getString(nameColumnIndex);
-        Integer phone1 = cursor.getInt(phoneColumnIndex);
-        String notes1 = cursor.getString(notesColumnIndex);
-        String description1 = cursor.getString(descriptionColumnIndex);
-        Integer age1 = cursor.getInt(ageColumnIndex);
-        Integer gender1 = cursor.getInt(genderColumnIndex);
-        Integer amount1 = cursor.getInt(amountColumnIndex);
-        Integer paid1 = cursor.getInt(paidColumnIndex);
-        Integer remain1 = cursor.getInt(remainingColumnIndex);
-        String date1 = cursor.getString(dateColumnIndex);
-        date = date1;
-        name.setText(name1);
-        phone.setText("0" + phone1);
+            String name1 = cursor.getString(nameColumnIndex);
+            Integer phone1 = cursor.getInt(phoneColumnIndex);
+            String notes1 = cursor.getString(notesColumnIndex);
+            String description1 = cursor.getString(descriptionColumnIndex);
+            Integer age1 = cursor.getInt(ageColumnIndex);
+            Integer gender1 = cursor.getInt(genderColumnIndex);
+            Integer amount1 = cursor.getInt(amountColumnIndex);
+            Integer paid1 = cursor.getInt(paidColumnIndex);
+            Integer remain1 = cursor.getInt(remainingColumnIndex);
+            String date1 = cursor.getString(dateColumnIndex);
 
-        notes.setText(notes1);
-        description.setText(description1);
-        age.setText(String.valueOf( age1));
-        amount.setText(String.valueOf( amount1));
-        paid.setText(String.valueOf( paid1));
-        remaining.setText(String.valueOf(remain1));
+            date = date1;
+            name.setText(name1);
+            phone.setText("0" + phone1);
 
-        switch (gender1) {
-            case PatientsEntry.GENDER_MALE:
-                spinner.setSelection(1);
-                break;
-            case PatientsEntry.GENDER_FEMALE:
-                spinner.setSelection(2);
-                break;
-            default:
-                spinner.setSelection(0);
+            notes.setText(notes1);
+            description.setText(description1);
+            age.setText(String.valueOf(age1));
+            amount.setText(String.valueOf(amount1));
+            paid.setText(String.valueOf(paid1));
+            remaining.setText(String.valueOf(remain1));
+
+            switch (gender1) {
+                case PatientsEntry.GENDER_MALE:
+                    spinner.setSelection(1);
+                    break;
+                case PatientsEntry.GENDER_FEMALE:
+                    spinner.setSelection(2);
+                    break;
+                default:
+                    spinner.setSelection(0);
+            }
         }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+        name.setText("");
+        age.setText("");
+        phone.setText("");
+        amount.setText("");
+        paid.setText("");
+        remaining.setText("");
+        description.setText("");
+        notes.setText("");
+        spinner.setSelection(0);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        getCurrentFocus();
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState, PersistableBundle persistentState) {
+        super.onRestoreInstanceState(savedInstanceState, persistentState);
+
+    }
+
+    public void trySelector() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+            return;
+        }
+        openSelector();
+    }
+
+    private void openSelector() {
+        Intent intent;
+        if (Build.VERSION.SDK_INT < 19) {
+            intent = new Intent(Intent.ACTION_GET_CONTENT);
+        } else {
+            intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+        }
+        intent.setType("image/*");
+        startActivityForResult(Intent.createChooser(intent, "Select picture"), 0);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case 1:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    openSelector();
+                }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 0 && resultCode == Activity.RESULT_OK) {
+            if (data != null) {
+                imageUri = data.getData();
+
+                productImage.setImageURI(imageUri);
+                productImage.invalidate();
+            }
+        }
     }
 }

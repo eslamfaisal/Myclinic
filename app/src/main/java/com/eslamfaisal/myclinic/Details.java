@@ -1,6 +1,5 @@
 package com.eslamfaisal.myclinic;
 
-import com.eslamfaisal.myclinic.data.DentalContract;
 import com.eslamfaisal.myclinic.data.DentalContract.PatientsEntry;
 
 import android.app.AlertDialog;
@@ -15,20 +14,24 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 public class Details extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     Uri currentUri;
-
+    ImageView productImage;
     TextView name, phone, notes, description, age, paid, amount, remaining, gender, date;
-
+    ImageView image;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
         Intent intent = getIntent();
         currentUri = intent.getData();
+
+        productImage = findViewById(R.id.imageView2);
 
         name = findViewById(R.id.name_text);
         phone = findViewById(R.id.phone_text);
@@ -56,6 +59,7 @@ public class Details extends AppCompatActivity implements LoaderManager.LoaderCa
                 PatientsEntry.COLUMN_PATIENT_DESCRIPTION,
                 PatientsEntry.COLUMN_PATIENT_AMOUNT,
                 PatientsEntry.COLUMN_PATIENT_AGE,
+                PatientsEntry.COLUMN_PATIENT_IMAGE,
                 PatientsEntry.COLUMN_PATIENT_GENDER};
         // This loader will execute the ContentProvider's query method on a background thread
         return new CursorLoader(this,   // Parent activity context
@@ -72,7 +76,8 @@ public class Details extends AppCompatActivity implements LoaderManager.LoaderCa
         if (cursor == null || cursor.getCount() < 1) {
             return;
         }
-        cursor.moveToNext();
+       if (cursor.moveToNext()){
+        int imageColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_IMAGE);
         int nameColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_NAME);
         int phoneColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_PHONE);
         int ageColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_AGE);
@@ -84,6 +89,7 @@ public class Details extends AppCompatActivity implements LoaderManager.LoaderCa
         int notesColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_NOTES);
         int descriptionColumnIndex = cursor.getColumnIndex(PatientsEntry.COLUMN_PATIENT_DESCRIPTION);
 
+        String image1 = cursor.getString(imageColumnIndex);
         String name1 = cursor.getString(nameColumnIndex);
         Integer phone1 = cursor.getInt(phoneColumnIndex);
         String notes1 = cursor.getString(notesColumnIndex);
@@ -94,6 +100,13 @@ public class Details extends AppCompatActivity implements LoaderManager.LoaderCa
         Integer paid1 = cursor.getInt(paidColumnIndex);
         Integer remain1 = cursor.getInt(remainingColumnIndex);
         String date1 = cursor.getString(dateColumnIndex);
+           if (image1 == null) {
+               Toast.makeText(this, "image null", Toast.LENGTH_SHORT).show();
+
+           }else {
+               productImage.setImageURI(Uri.parse(image1));
+
+           }
         name.setText(name1);
         phone.setText("0" + phone1);
         notes.setText(notes1);
@@ -114,10 +127,20 @@ public class Details extends AppCompatActivity implements LoaderManager.LoaderCa
                 gender.setText(getString(R.string.gender_unknown));
         }
     }
+    }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
+        name.setText("");
+        age.setText("");
+        phone.setText("");
+        amount.setText("");
+        paid.setText("");
+        remaining.setText("");
+        description.setText("");
+        notes.setText("");
+        gender.setText(getString(R.string.gender_unknown));
+        date.setText("");
     }
 
     @Override

@@ -25,6 +25,7 @@ public class DentalDbHelper extends SQLiteOpenHelper {
                 + PatientsEntry.COLUMN_PATIENT_AGE + " INTEGER NOT NULL ,"
                 + PatientsEntry.COLUMN_PATIENT_AMOUNT + " INTEGER NOT NULL ,"
                 + PatientsEntry.COLUMN_PATIENT_DATE + " TEXT NOT NULL ,"
+                + PatientsEntry.COLUMN_PATIENT_IMAGE + " TEXT ,"
                 + PatientsEntry.COLUMN_PATIENT_GENDER + " INTEGER NOT NULL ,"
                 + PatientsEntry.COLUMN_PATIENT_PAID + " INTEGER NOT NULL ,"
                 + PatientsEntry.COLUMN_PATIENT_REMAINING + " INTEGER NOT NULL ,"

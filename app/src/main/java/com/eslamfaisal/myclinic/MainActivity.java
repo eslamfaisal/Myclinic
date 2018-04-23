@@ -10,6 +10,8 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -26,12 +28,18 @@ import com.eslamfaisal.myclinic.data.DentalContract;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    int index;
+    int top;
+    private static final String LIST_INSTANCE_STATE = "sveInstance";
     ListView listView ;
     PatientsAdapter adapter;
+    Parcelable mListInstanceState;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         FloatingActionButton fab =  findViewById(R.id.fab);
@@ -126,11 +134,30 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         adapter.swapCursor(data);
+
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
         adapter.swapCursor(null);
+
     }
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(LIST_INSTANCE_STATE, listView.onSaveInstanceState());
+        // save index and top position
+         index = listView.getFirstVisiblePosition();
+
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState, PersistableBundle persistentState) {
+        super.onRestoreInstanceState(savedInstanceState, persistentState);
+        mListInstanceState = savedInstanceState.getParcelable(LIST_INSTANCE_STATE);
+        listView.setSelection(index);
+
+    }
+
 }

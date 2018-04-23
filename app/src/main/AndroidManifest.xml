@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.eslamfaisal.myclinic">
-
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.SEND_SMS"/>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -26,12 +29,7 @@
             android:exported="false" />
 
         <activity
-            android:name=".EditorActivity"
-            android:parentActivityName=".Details">
-
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".Details" />
+            android:name=".EditorActivity">
         </activity>
         <activity
             android:name=".Details"

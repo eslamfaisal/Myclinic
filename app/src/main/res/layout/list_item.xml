@@ -46,7 +46,7 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/imageView_messag"
+            android:id="@+id/imageView_call"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_alignParentEnd="true"
@@ -57,7 +57,7 @@
             android:src="@drawable/call2" />
 
         <ImageView
-            android:id="@+id/imageView_call"
+            android:id="@+id/imageView_messag"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_alignParentEnd="true"

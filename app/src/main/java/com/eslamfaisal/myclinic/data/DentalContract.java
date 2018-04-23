@@ -24,6 +24,7 @@ public class DentalContract {
         public static final String COLUMN_PATIENT_AGE = "age";
         public static final String COLUMN_PATIENT_NAME = "name";
         public static final String COLUMN_PATIENT_DATE = "date";
+        public static final String COLUMN_PATIENT_IMAGE = "image";
         public static final String COLUMN_PATIENT_PAID = "paid";
         public static final String COLUMN_PATIENT_PHONE = "phone";
         public static final String COLUMN_PATIENT_NOTES = "notes";
